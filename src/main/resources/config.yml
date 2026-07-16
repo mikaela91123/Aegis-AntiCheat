@@ -1,0 +1,215 @@
+# ============================================
+#         Aegis Anti-Cheat Configuration
+#         Project Aegis v1.1
+# ============================================
+
+# General Settings
+general:
+  # Prefix for all messages
+  prefix: "&8[&c&lAegis&8] &7"
+  # Enable debug mode (verbose logging)
+  debug: false
+  # Language (en, ar)
+  language: "en"
+
+# Database Settings
+database:
+  # Type: SQLITE or MONGODB
+  type: "SQLITE"
+  # SQLite file path (relative to plugin folder)
+  sqlite-file: "aegis_data.db"
+  # MongoDB connection (only if type is MONGODB)
+  mongodb:
+    uri: "mongodb://localhost:27017"
+    database: "aegis"
+  # Auto-cleanup: delete evidence older than X days
+  cleanup:
+    enabled: true
+    max-age-days: 30
+    # Run cleanup every X hours
+    interval-hours: 24
+
+# Trust Factor Settings
+trust-factor:
+  # Enable Trust Factor system
+  enabled: true
+  # Weight for playtime (hours * weight)
+  playtime-weight: 0.5
+  # Penalty for recent violations (VL * weight)
+  violation-penalty: 2.0
+  # Base score for new players
+  base-score: 5.0
+  # Max Trust Factor score
+  max-score: 100.0
+  # VL threshold multiplier for trusted players
+  # Players with high TF get (threshold * multiplier) before punishment
+  trusted-threshold-multiplier: 1.5
+  # Minimum TF to be considered "trusted"
+  trusted-minimum: 30.0
+
+# Staff Alerts
+alerts:
+  # Enable in-game alerts
+  enabled: true
+  # Minimum VL before alerting staff
+  min-vl-alert: 3
+  # Alert cooldown per check per player (in ticks, 20 = 1 second)
+  cooldown-ticks: 40
+  # Discord Webhook URL (leave empty to disable)
+  discord-webhook: ""
+
+# Punishment Settings
+punishment:
+  # Enable automatic punishments
+  enabled: true
+  # Command to execute on ban (use %player% placeholder)
+  ban-command: "ban %player% [Aegis] Unfair Advantage"
+  # Command to execute on kick
+  kick-command: "kick %player% [Aegis] Suspicious Activity"
+  # Command to execute on unban (via appeal approval)
+  unban-command: "unban %player%"
+  # Auto-Unban: disable check if too many trusted players get banned
+  auto-unban:
+    enabled: true
+    # Max bans of trusted players within time window before disabling check
+    max-trusted-bans: 3
+    # Time window in minutes
+    time-window-minutes: 10
+
+# Exemptions
+exemptions:
+  # Exempt Bedrock players (requires Floodgate)
+  bedrock-players: true
+  # Exempt players with specific permission
+  bypass-permission: "aegis.bypass"
+  # Exempt players for X ticks after taking damage (knockback grace)
+  knockback-grace-ticks: 40
+  # Exempt players with ping above X ms from sensitive checks
+  high-ping-threshold: 350
+  # Exempt players during teleportation for X ticks
+  teleport-grace-ticks: 10
+  # Below this TPS, checks become more lenient
+  lag-tps-threshold: 18.0
+  # Below this TPS, movement checks are completely disabled
+  lag-disable-threshold: 14.0
+
+# Evidence / Replay System
+evidence:
+  # Enable evidence recording
+  enabled: true
+  # Buffer size in ticks (200 ticks = 10 seconds)
+  buffer-size-ticks: 200
+  # Save evidence to database on ban
+  save-on-ban: true
+
+# ============================================
+#             CHECK CONFIGURATIONS
+# ============================================
+
+checks:
+  # --- MOVEMENT CHECKS ---
+  fly:
+    enabled: true
+    # Check A: Vertical movement above expected
+    a:
+      enabled: true
+      max-vl: 15
+      # Action: SETBACK, KICK, BAN
+      punishment: "KICK"
+    # Check B: Hovering in air without blocks
+    b:
+      enabled: true
+      max-vl: 10
+      punishment: "KICK"
+
+  speed:
+    enabled: true
+    a:
+      enabled: true
+      max-vl: 20
+      punishment: "KICK"
+    b:
+      enabled: true
+      max-vl: 15
+      punishment: "KICK"
+
+  timer:
+    enabled: true
+    a:
+      enabled: true
+      max-vl: 10
+      punishment: "KICK"
+
+  nofall:
+    enabled: true
+    a:
+      enabled: true
+      max-vl: 10
+      punishment: "KICK"
+
+  # --- COMBAT CHECKS ---
+  killaura:
+    enabled: true
+    a:
+      enabled: true
+      max-vl: 12
+      punishment: "BAN"
+    b:
+      enabled: true
+      max-vl: 15
+      punishment: "BAN"
+
+  autoclicker:
+    enabled: true
+    a:
+      enabled: true
+      # Max CPS before suspicion
+      max-cps: 22
+      max-vl: 15
+      punishment: "BAN"
+
+  reach:
+    enabled: true
+    a:
+      enabled: true
+      # Max reach distance in blocks
+      max-reach: 3.1
+      max-vl: 7
+      punishment: "BAN"
+
+  step:
+    enabled: true
+    a:
+      enabled: true
+      max-vl: 10
+      punishment: "KICK"
+
+  jesus:
+    enabled: true
+    a:
+      enabled: true
+      max-vl: 10
+      punishment: "KICK"
+
+  verticaldelta:
+    enabled: true
+    a:
+      enabled: true
+      max-vl: 2
+      punishment: "BAN"
+
+  # --- PACKET CHECKS ---
+  badpackets:
+    enabled: true
+    a:
+      enabled: true
+      max-vl: 5
+      punishment: "KICK"
+
+  rotation:
+    enabled: true
+    a:
+      enabled: true
+      max-per-tick: 30
+      max-vl: 25
+      punishment: "KICK"

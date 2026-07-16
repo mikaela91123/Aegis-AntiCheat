@@ -1,0 +1,89 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.0.0-beta12'
+    id("xyz.jpenilla.run-paper") version "2.3.1"
+}
+
+group = 'org.legacy'
+version = '1.1'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "papermc-repo"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+    maven {
+        name = "codemc-releases"
+        url = "https://repo.codemc.io/repository/maven-releases/"
+    }
+    maven {
+        name = "codemc-snapshots"
+        url = "https://repo.codemc.io/repository/maven-snapshots/"
+    }
+}
+
+dependencies {
+    compileOnly("dev.folia:folia-api:1.21.11-R0.1-SNAPSHOT")
+
+    // Gson - provided by Paper at runtime
+    compileOnly("com.google.code.gson:gson:2.11.0")
+
+    // PacketEvents - Async packet handling
+    implementation("com.github.retrooper:packetevents-spigot:2.11.2")
+
+    // SQLite JDBC Driver
+    implementation("org.xerial:sqlite-jdbc:3.49.1.0")
+
+    // JDA - Discord bot (shaded and relocated to avoid conflicts with LegacyLifeSteal)
+    implementation("net.dv8tion:JDA:5.3.2") {
+        exclude module: "opus-java"
+    }
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    // mergeServiceFiles() ensures relocated JDBC driver SPI registration survives relocation
+    mergeServiceFiles()
+    relocate 'com.github.retrooper.packetevents', 'org.legacy.libs.packetevents'
+    relocate 'io.github.retrooper.packetevents', 'org.legacy.libs.packetevents.io'
+    relocate 'org.sqlite', 'org.legacy.libs.sqlite'
+    relocate 'net.dv8tion.jda', 'org.legacy.libs.jda'
+}
+
+tasks {
+    build {
+        dependsOn(shadowJar)
+    }
+    runServer {
+        minecraftVersion("1.21.11")
+    }
+}
+
+def targetJavaVersion = 21
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release.set(targetJavaVersion)
+    }
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}
